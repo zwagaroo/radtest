@@ -1,0 +1,31 @@
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QLabel,QVBoxLayout
+
+def on_button_click():
+    text = input_field.text()
+    result_label.setText(f"Entered text: {text}")
+
+app = QApplication(sys.argv)
+
+window = QWidget()
+window.setWindowTitle('Customized Input Field Example')
+
+input_field = QLineEdit()
+input_field.setPlaceholderText('Enter text...')
+input_field.setGeometry(50, 50, 200, 30)  # Set the input field's position and size
+
+button = QPushButton('Click Me')
+button.clicked.connect(on_button_click)
+
+result_label = QLabel()
+
+layout = QVBoxLayout()
+layout.addWidget(input_field)
+layout.addWidget(button)
+layout.addWidget(result_label)
+
+window.setLayout(layout)
+
+window.show()
+
+sys.exit(app.exec_())
