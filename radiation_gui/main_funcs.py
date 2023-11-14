@@ -43,7 +43,7 @@ class PSWorker(QObject):
       '''
     finished = pyqtSignal()
     error = pyqtSignal(tuple)
-    all_data = pyqtSignal(float, float, float, float, int, object)
+    all_data = pyqtSignal(float, float, float, float, float, object)
     GUI_PS = pyqtSignal(float, float, float, float)
 
 
@@ -74,10 +74,11 @@ class PSWorker(QObject):
             self.MyWindow.device_release = 1
             end = time.time()                           #Recording and displaying V, I and time for each PS
             self.MyWindow.time_last = end - start 
-            #print(type(self.MyWindow.time_last))
+
+
                 
             self.GUI_PS.emit(self.data[0][0], self.data[1][0], self.data[2][0], self.data[3][0])
-            self.all_data.emit(self.data[0][0], self.data[1][0], self.data[2][0], self.data[3][0], int(self.MyWindow.time_last), self.target_time)
+            self.all_data.emit(self.data[0][0], self.data[1][0], self.data[2][0], self.data[3][0], self.MyWindow.time_last, self.target_time)
             
             self.MyWindow.time_total = time_accu + self.MyWindow.time_last
 
@@ -240,102 +241,120 @@ class MyWindowPS(object):
 
 
                 self.layoutWidget["FirstLayout{0}".format(i)] = QtWidgets.QWidget( self.dict_PStabs["PS{0}".format(i)])
-                self.layoutWidget["FirstLayout{0}".format(i)].setGeometry(QtCore.QRect(30,70,200,150))
+                self.layoutWidget["FirstLayout{0}".format(i)].setGeometry(QtCore.QRect(30,70,200,400))
                 self.layout["Layout{0}".format(i)] = QtWidgets.QVBoxLayout(self.layoutWidget["FirstLayout{0}".format(i)])
+                self.layout["Layout{0}".format(i)].setSpacing(20)
 
-                self.layoutWidget2["SecondLayout{0}".format(i)] = QtWidgets.QWidget( self.dict_PStabs["PS{0}".format(i)])
-                self.layoutWidget2["SecondLayout{0}".format(i)].setGeometry(QtCore.QRect(150,70,200,150))
-                self.layout2["Layout{0}".format(i)] = QtWidgets.QVBoxLayout(self.layoutWidget2["SecondLayout{0}".format(i)])
-
-                self.dict_PS_init["INIT PS{0}".format(i)] = QtWidgets.QWidget( self.dict_PStabs["PS{0}".format(i)])
-                self.dict_PS_init["INIT PS{0}".format(i)].setGeometry(QtCore.QRect(60,-20,200,150))
-                self.dict_PSINIT_layout["PS{0} Layout".format(i)] = QtWidgets.QVBoxLayout(self.dict_PS_init["INIT PS{0}".format(i)])
-
-                self.dict_init_button["Init button PS{0}".format(i)] = QtWidgets.QPushButton(  self.dict_PS_init["INIT PS{0}".format(i)])
+                self.dict_init_button["Init button PS{0}".format(i)] = QtWidgets.QPushButton()
                 self.dict_init_button["Init button PS{0}".format(i)].setText("Init Power Supply " + str(i))
-                self.dict_PSINIT_layout["PS{0} Layout".format(i)].addWidget( self.dict_init_button["Init button PS{0}".format(i)])
-
 
                 self.dict_init_button["Init button PS{0}".format(i)].clicked.connect(lambda state, x=i: self.gpib(int(self.addr["Address{0}".format(x)]),int(x),self.voltage1["Voltage{0}".format(x)],self.current1["Current{0}".format(x)],self.voltage2["Voltage{0}".format(x)],self.current2["Current{0}".format(x)]))
+                self.dict_init_button["Init button PS{0}".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+                INIT_LAYOUT  =  QtWidgets.QHBoxLayout()
+                INIT_LAYOUT.addWidget(self.dict_init_button["Init button PS{0}".format(i)])
+                self.layout["Layout{0}".format(i)].addLayout(INIT_LAYOUT)
 
-                     
-                self.dict_PSON["PS{0} ON".format(i)] = QtWidgets.QWidget(self.dict_PStabs["PS{0}".format(i)])
-                self.dict_PSON["PS{0} ON".format(i)].setGeometry(QtCore.QRect(25,170,130,150))#QtCore.QRect(25,170,130,150))
-                self.dict_PSON_layout["PS{0} Layout".format(i)] = QtWidgets.QVBoxLayout(self.dict_PSON["PS{0} ON".format(i)])
+                self.dict_v["PS{0} Voltage1".format(i)] = QtWidgets.QLabel()
+                self.dict_v["PS{0} Voltage1".format(i)].setText(str ("PS" + str (i) + " Voltage 1:"))
+                self.dict_v["PS{0} Voltage1".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+                
+                self.dict_dash_v["PS{0} Dash".format(i)] = QtWidgets.QLabel()
+                self.dict_dash_v["PS{0} Dash".format(i)].setText("-")
+                self.dict_dash_v["PS{0} Dash".format(i)].setMinimumSize(QtCore.QSize(50, 30))
 
-                self.dict_on_button["PS{0} On button".format(i)] = QtWidgets.QPushButton(self.dict_PSON["PS{0} ON".format(i)])
+                v1_layout = QtWidgets.QHBoxLayout()
+                v1_layout.addWidget(self.dict_v["PS{0} Voltage1".format(i)] )
+                v1_layout.addWidget(self.dict_dash_v["PS{0} Dash".format(i)] )
+                self.layout["Layout{0}".format(i)].addLayout(v1_layout)
+
+
+                self.dict_v2["PS{0} Voltage2".format(i)] = QtWidgets.QLabel()
+                self.dict_v2["PS{0} Voltage2".format(i)].setText(str ("PS" + str (i) + " Voltage 2:"))
+                self.dict_v2["PS{0} Voltage2".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+
+
+                
+                self.dict_dash_v2["PS{0} Dash".format(i)] = QtWidgets.QLabel()
+                self.dict_dash_v2["PS{0} Dash".format(i)].setText("-")
+                self.dict_dash_v2["PS{0} Dash".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+
+                v2_layout = QtWidgets.QHBoxLayout()
+                v2_layout.addWidget(self.dict_v2["PS{0} Voltage2".format(i)] )
+                v2_layout.addWidget(self.dict_dash_v2["PS{0} Dash".format(i)] )
+                self.layout["Layout{0}".format(i)].addLayout(v2_layout)
+
+
+                self.dict_c["PS{0} Current".format(i)] = QtWidgets.QLabel()
+                self.dict_c["PS{0} Current".format(i)].setText(str ("PS" + str (i) + " Current 1:"))
+
+                self.dict_dash_c["PS{0} Dash".format(i)] = QtWidgets.QLabel()
+                self.dict_dash_c["PS{0} Dash".format(i)].setText("-")
+
+                self.dict_c["PS{0} Current".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+                self.dict_dash_c["PS{0} Dash".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+
+                c1_layout = QtWidgets.QHBoxLayout()
+                c1_layout.addWidget(self.dict_c["PS{0} Current".format(i)])
+                c1_layout.addWidget( self.dict_dash_c["PS{0} Dash".format(i)] )
+                self.layout["Layout{0}".format(i)].addLayout(c1_layout)
+
+
+                self.dict_c2["PS{0} Current2".format(i)] = QtWidgets.QLabel()
+                self.dict_c2["PS{0} Current2".format(i)].setText(str ("PS" + str (i) + " Current 2:"))
+
+
+                self.dict_dash_c2["PS{0} Dash".format(i)] = QtWidgets.QLabel()
+                self.dict_dash_c2["PS{0} Dash".format(i)].setText("-")
+
+
+                self.dict_c2["PS{0} Current2".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+                self.dict_dash_c2["PS{0} Dash".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+                
+                c2_layout = QtWidgets.QHBoxLayout()
+                c2_layout.addWidget(self.dict_c2["PS{0} Current2".format(i)])
+                c2_layout.addWidget(self.dict_dash_c2["PS{0} Dash".format(i)] )
+                self.layout["Layout{0}".format(i)].addLayout(c2_layout)
+
+
+                self.dict_on_button["PS{0} On button".format(i)] = QtWidgets.QPushButton()                
                 self.dict_on_button["PS{0} On button".format(i)].setText("PS " + str(i) + " ON")
-                self.dict_PSON_layout["PS{0} Layout".format(i)].addWidget(self.dict_on_button["PS{0} On button".format(i)] )
-
-
                 self.dict_on_button["PS{0} On button".format(i)].clicked.connect(lambda state, x=i: self.pwr_on(int(self.addr["Address{0}".format(x)]),int(x),self.voltage1["Voltage{0}".format(x)],self.current1["Current{0}".format(x)]    ,self.voltage2["Voltage{0}".format(x)],self.current2["Current{0}".format(x)] ))
 
+                self.dict_on_button["PS{0} On button".format(i)].setMinimumSize(QtCore.QSize(50, 30))
 
 
-                self.dict_PSOFF["PS{0} OFF".format(i)] = QtWidgets.QWidget(self.dict_PStabs["PS{0}".format(i)])
-                self.dict_PSOFF["PS{0} OFF".format(i)].setGeometry(QtCore.QRect(150,170,130,150))
-                self.dict_PSOFF_layout["PS{0} Layout".format(i)] = QtWidgets.QVBoxLayout(self.dict_PSOFF["PS{0} OFF".format(i)])
-
-                self.dict_off_button["PS{0} Off button".format(i)] = QtWidgets.QPushButton(self.dict_PSOFF["PS{0} OFF".format(i)])
+                self.dict_off_button["PS{0} Off button".format(i)] = QtWidgets.QPushButton()
                 self.dict_off_button["PS{0} Off button".format(i)].setText("PS " + str(i) + " OFF")
-                self.dict_PSOFF_layout["PS{0} Layout".format(i)].addWidget(self.dict_off_button["PS{0} Off button".format(i)] )
-                
-
-
                 self.dict_off_button["PS{0} Off button".format(i)].clicked.connect(lambda state, x=i: self.pwr_off(int(self.addr["Address{0}".format(x)]),int(x),self.voltage1["Voltage{0}".format(x)],self.current1["Current{0}".format(x)]    ,self.voltage2["Voltage{0}".format(x)],self.current2["Current{0}".format(x)] ))
-
-
-
-                self.dict_v["PS{0} Voltage1".format(i)] = QtWidgets.QLabel(self.layoutWidget["FirstLayout{0}".format(i)])
-                self.dict_v["PS{0} Voltage1".format(i)].setText(str ("PS" + str (i) + " Voltage 1:"))
-                self.layout["Layout{0}".format(i)].addWidget(self.dict_v["PS{0} Voltage1".format(i)])
-
-                self.dict_v2["PS{0} Voltage2".format(i)] = QtWidgets.QLabel(self.layoutWidget["FirstLayout{0}".format(i)])
-                self.dict_v2["PS{0} Voltage2".format(i)].setText(str ("PS" + str (i) + " Voltage 2:"))
-                self.layout["Layout{0}".format(i)].addWidget(self.dict_v2["PS{0} Voltage2".format(i)])
-
-
-                self.dict_c["PS{0} Current".format(i)] = QtWidgets.QLabel(self.layoutWidget["FirstLayout{0}".format(i)])
-                self.dict_c["PS{0} Current".format(i)].setText(str ("PS" + str (i) + " Current 1:"))
-                self.layout["Layout{0}".format(i)].addWidget(self.dict_c["PS{0} Current".format(i)])
-
-                self.dict_c2["PS{0} Current2".format(i)] = QtWidgets.QLabel(self.layoutWidget["FirstLayout{0}".format(i)])
-                self.dict_c2["PS{0} Current2".format(i)].setText(str ("PS" + str (i) + " Current 2:"))
-                self.layout["Layout{0}".format(i)].addWidget(self.dict_c2["PS{0} Current2".format(i)])
                 
-                self.dict_dash_v["PS{0} Dash".format(i)] = QtWidgets.QLabel(self.layoutWidget2["SecondLayout{0}".format(i)])
-                self.dict_dash_v["PS{0} Dash".format(i)].setText("-")
-                self.layout2["Layout{0}".format(i)].addWidget(self.dict_dash_v["PS{0} Dash".format(i)])
-                self.dict_dash_v2["PS{0} Dash".format(i)] = QtWidgets.QLabel(self.layoutWidget2["SecondLayout{0}".format(i)])
-                self.dict_dash_v2["PS{0} Dash".format(i)].setText("-")
-                self.layout2["Layout{0}".format(i)].addWidget(self.dict_dash_v2["PS{0} Dash".format(i)])
+                self.dict_off_button["PS{0} Off button".format(i)].setMinimumSize(QtCore.QSize(50, 30))
 
-                self.dict_dash_c["PS{0} Dash".format(i)] = QtWidgets.QLabel(self.layoutWidget2["SecondLayout{0}".format(i)])
-                self.dict_dash_c["PS{0} Dash".format(i)].setText("-")
-                self.layout2["Layout{0}".format(i)].addWidget(self.dict_dash_c["PS{0} Dash".format(i)])
-
-                self.dict_dash_c2["PS{0} Dash".format(i)] = QtWidgets.QLabel(self.layoutWidget2["SecondLayout{0}".format(i)])
-                self.dict_dash_c2["PS{0} Dash".format(i)].setText("-")
-                self.layout2["Layout{0}".format(i)].addWidget(self.dict_dash_c2["PS{0} Dash".format(i)])
+                PSONOFF_Layout = QtWidgets.QHBoxLayout()
+                PSONOFF_Layout.addWidget(self.dict_on_button["PS{0} On button".format(i)])
+                PSONOFF_Layout.addWidget(self.dict_off_button["PS{0} Off button".format(i)])
+                self.layout["Layout{0}".format(i)].addLayout(PSONOFF_Layout)
                     
-                self.monitor_on_widget["Monitor on{0}".format(i)] = QtWidgets.QWidget(self.dict_PStabs["PS{0}".format(i)])
-                self.monitor_on_widget["Monitor on{0}".format(i)].setGeometry(QtCore.QRect(25,240,130,150))
-                self.monitor_on_layout["Monitor on{0}".format(i)] = QtWidgets.QVBoxLayout(self.monitor_on_widget["Monitor on{0}".format(i)])
 
-                self.monitor_off_widget["Monitor off{0}".format(i)] = QtWidgets.QWidget(self.dict_PStabs["PS{0}".format(i)])
-                self.monitor_off_widget["Monitor off{0}".format(i)].setGeometry(QtCore.QRect(150,240,130,150))
-                self.monitor_off_layout["Monitor off{0}".format(i)] = QtWidgets.QVBoxLayout(self.monitor_off_widget["Monitor off{0}".format(i)])
-
-                self.monitor_on_button["Monitor on{0}".format(i)] = QtWidgets.QPushButton(self.monitor_on_widget["Monitor on{0}".format(i)])
+                self.monitor_on_button["Monitor on{0}".format(i)] = QtWidgets.QPushButton()
                 self.monitor_on_button["Monitor on{0}".format(i)].setText("MONITOR ON")
-                self.monitor_on_layout["Monitor on{0}".format(i)].addWidget(self.monitor_on_button["Monitor on{0}".format(i)])
                 self.monitor_on_button["Monitor on{0}".format(i)].clicked.connect(lambda state, x=i: self.monitor_on(int(x)))
 
-                self.monitor_off_button["Monitor off{0}".format(i)] = QtWidgets.QPushButton(self.monitor_off_widget["Monitor off{0}".format(i)])
+                
+                self.monitor_on_button["Monitor on{0}".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+
+
+                self.monitor_off_button["Monitor off{0}".format(i)] = QtWidgets.QPushButton()
                 self.monitor_off_button["Monitor off{0}".format(i)].setText("MONITOR OFF")
-                self.monitor_off_layout["Monitor off{0}".format(i)].addWidget(self.monitor_off_button["Monitor off{0}".format(i)])
                 self.monitor_off_button["Monitor off{0}".format(i)].clicked.connect(lambda state, x=i: self.monitor_off(int(x)))
                 self.monitor_off_button["Monitor off{0}".format(i)].setEnabled(False)
+
+
+                self.monitor_off_button["Monitor off{0}".format(i)].setMinimumSize(QtCore.QSize(50, 30))
+                MONITOR_ONOFF_Layout = QtWidgets.QHBoxLayout()
+                MONITOR_ONOFF_Layout.addWidget(self.monitor_on_button["Monitor on{0}".format(i)])
+                MONITOR_ONOFF_Layout.addWidget(self.monitor_off_button["Monitor off{0}".format(i)])
+                self.layout["Layout{0}".format(i)].addLayout(MONITOR_ONOFF_Layout)
+
                                
                 self.address_widget["Address Widget{0}".format(i)] = QtWidgets.QWidget(self.dict_PStabs["PS{0}".format(i)])
                 self.address_widget["Address Widget{0}".format(i)].setGeometry(QtCore.QRect(20,530,150,150))
@@ -367,7 +386,7 @@ class MyWindowPS(object):
                 self.dict_graph_widget["PS{0} plot layout".format(i)].setLabel('bottom', 'Time (S)', color="r", size="5pt")
                 self.dict_graph_widget["PS{0} plot layout".format(i)].showGrid(x=True, y=True)
                 
-                self.volt1_data_line["PS{0} Voltage1 Data Line".format(i)] =  self.dict_graph_widget["PS{0} plot layout".format(i)].plot(self.time, self.volt1_data["Output 1 Volt{0}".format(i)], pen = self.pen, name = "Output 1 Voltage")
+                self.volt1_data_line["PS{0} Voltage1 Data Line".format(i)] =  self.dict_graph_widget["PS{0} plot layout".format(i)].plot(self.time_dict["Time{0}".format(i)], self.volt1_data["Output 1 Volt{0}".format(i)], pen = self.pen, name = "Output 1 Voltage")
 
 
                 self.dict_plot_layout4["PS{0} plot layout".format(i)] = QtWidgets.QWidget(self.dict_PStabs["PS{0}".format(i)])
@@ -384,7 +403,7 @@ class MyWindowPS(object):
                 self.dict_graph_widget4["PS{0} plot layout".format(i)].showGrid(x=True, y=True)
 
 
-                self.volt2_data_line["PS{0} Voltage2 Data Line".format(i)] =  self.dict_graph_widget4["PS{0} plot layout".format(i)].plot(self.time, self.volt2_data["Output 2 Volt{0}".format(i)], pen = self.pen2, name = "Output 2 Voltage")
+                self.volt2_data_line["PS{0} Voltage2 Data Line".format(i)] =  self.dict_graph_widget4["PS{0} plot layout".format(i)].plot(self.time_dict["Time{0}".format(i)], self.volt2_data["Output 2 Volt{0}".format(i)], pen = self.pen2, name = "Output 2 Voltage")
 
                 self.dict_plot_layout2["PS{0} plot layout".format(i)] = QtWidgets.QWidget(self.dict_PStabs["PS{0}".format(i)])
                 self.dict_plot_layout2["PS{0} plot layout".format(i)].setGeometry(QtCore.QRect(320, 300, 500, 300))
@@ -399,7 +418,7 @@ class MyWindowPS(object):
                 self.dict_graph_widget2["PS{0} plot layout".format(i)].setLabel('bottom', 'Time (S)', color="r", size="5pt")
                 self.dict_graph_widget2["PS{0} plot layout".format(i)].showGrid(x=True, y=True)
 
-                self.curr1_data_line["PS{0} Current1  Data Line".format(i)] = self.dict_graph_widget2["PS{0} plot layout".format(i)].plot(self.time, self.curr1_data["Output 1 Curr{0}".format(i)], pen = self.pen4, name = "Output 1 Current")
+                self.curr1_data_line["PS{0} Current1  Data Line".format(i)] = self.dict_graph_widget2["PS{0} plot layout".format(i)].plot(self.time_dict["Time{0}".format(i)], self.curr1_data["Output 1 Curr{0}".format(i)], pen = self.pen4, name = "Output 1 Current")
 
                 self.dict_plot_layout3["PS{0} plot layout".format(i)] = QtWidgets.QWidget(self.dict_PStabs["PS{0}".format(i)])
                 self.dict_plot_layout3["PS{0} plot layout".format(i)].setGeometry(QtCore.QRect(830, 300, 500, 300))
@@ -414,7 +433,7 @@ class MyWindowPS(object):
                 self.dict_graph_widget3["PS{0} plot layout".format(i)].setLabel('bottom', 'Time (S)', color="r", size="5pt")
                 self.dict_graph_widget3["PS{0} plot layout".format(i)].showGrid(x=True, y=True)
                 
-                self.curr2_data_line["PS{0} Current2  Data Line".format(i)] = self.dict_graph_widget3["PS{0} plot layout".format(i)].plot(self.time, self.curr2_data["Output 2 Curr{0}".format(i)], pen = self.pen3, name = "Output 2 Current")
+                self.curr2_data_line["PS{0} Current2  Data Line".format(i)] = self.dict_graph_widget3["PS{0} plot layout".format(i)].plot(self.time_dict["Time{0}".format(i)], self.curr2_data["Output 2 Curr{0}".format(i)], pen = self.pen3, name = "Output 2 Current")
 
                 #period of shutdown activity, shuts down for a period and turns back on for a period
                 
@@ -428,33 +447,42 @@ class MyWindowPS(object):
                 self.layout["Layout{0}".format(i)].addWidget(self.setpoint_voltage2_input["Voltage Input 2{0}".format(i)])
                 self.setpoint_voltage2_input["Voltage Input 2{0}".format(i)].setPlaceholderText("Enter Setpoint Voltage 2")
 
+                setVoltageLayout = QtWidgets.QHBoxLayout()
+                setVoltageLayout.addWidget(self.setpoint_voltage1_input["Voltage Input 1{0}".format(i)])
+                setVoltageLayout.addWidget(self.setpoint_voltage2_input["Voltage Input 2{0}".format(i)])
+                self.layout["Layout{0}".format(i)].addLayout(setVoltageLayout)
+
                 # Create a button for setting voltage 1
                 self.set_voltage1_button["Set Voltage 1 Button{0}".format(i)] = QtWidgets.QPushButton("Set Voltage 1", self.dict_PStabs["PS{0}".format(i)])
-                self.layout["Layout{0}".format(i)].addWidget(self.set_voltage1_button["Set Voltage 1 Button{0}".format(i)])
+                self.set_voltage1_button["Set Voltage 1 Button{0}".format(i)].setMinimumSize(QtCore.QSize(50, 30))
 
                 # Create a button for setting voltage 2
                 self.set_voltage2_button["Set Voltage 2 Button{0}".format(i)] = QtWidgets.QPushButton("Set Voltage 2", self.dict_PStabs["PS{0}".format(i)])
-                self.layout["Layout{0}".format(i)].addWidget(self.set_voltage2_button["Set Voltage 2 Button{0}".format(i)])
+                self.set_voltage2_button["Set Voltage 2 Button{0}".format(i)] .setMinimumSize(QtCore.QSize(50, 30))
+
+                buttonLayout = QtWidgets.QHBoxLayout()
+                buttonLayout.addWidget(self.set_voltage1_button["Set Voltage 1 Button{0}".format(i)])
+                buttonLayout.addWidget(self.set_voltage2_button["Set Voltage 2 Button{0}".format(i)])
+                self.layout["Layout{0}".format(i)].addLayout(buttonLayout)
                 
                 self.set_voltage1_button["Set Voltage 1 Button{0}".format(i)].clicked.connect(lambda state, x=i: self.setVoltage(int(self.addr["Address{0}".format(x)]), int(x), 1) )
                 self.set_voltage2_button["Set Voltage 2 Button{0}".format(i)].clicked.connect(lambda state, x=i: self.setVoltage(int(self.addr["Address{0}".format(x)]), int(x), 2))
+
 
     def setVoltage(self, addr, j, output_num):
 
         gpib_inst = get_instrument_connection('GPIB0::{}::INSTR'.format(addr))
 
-        try:
-            gpib_inst.write('INST:SEL OUT{}'.format(output_num))
+        self.monitor_off(int(j))
 
-            gpib_inst.query('INST:SEL?')
+        gpib_inst.write('INST:SEL OUT{}'.format(output_num))
 
-            applq = gpib_inst.query('APPL?')
 
-            appl = gpib_inst.write('APPL ' + str(float(self.setpoint_voltage1_input["Voltage Input 1{0}".format(addr)].text())
-))
-            # Logic to set voltage 1 for the PSU
-        except ValueError:
-            print(f"Invalid voltage {output_num} input for PSU", addr)
+        if(output_num == 1):
+            appl = gpib_inst.write('APPL ' + str(float(self.setpoint_voltage1_input["Voltage Input 1{0}".format(j)].text() )) + ", " + "1")
+        elif(output_num == 2):
+            appl = gpib_inst.write('APPL ' + str(float(self.setpoint_voltage2_input["Voltage Input 2{0}".format(j)].text() )) + ", " + "1")
+
 
     def print_str(self,string):
         print(string)
@@ -573,6 +601,7 @@ class MyWindowPS(object):
     def graph(self, i, f1, f2, f3, f4, i1, obj1):
         print("Get PS Data")
         
+        print(self.identifier+ str(i1))
 
         self.volt1_data["Output 1 Volt{0}".format(i)].append(f1)
         self.curr1_data["Output 1 Curr{0}".format(i)].append(f3)
@@ -631,9 +660,15 @@ class MyWindowPS(object):
         return
 
     def monitor_off(self,i):
-            self.worker_dict["Worker{0}".format(i)].stop(int(i))
-            self.thread_dict["Thread{0}".format(i)].quit()
-            self.thread_dict["Thread{0}".format(i)].wait()
+            
+            if "Worker{0}".format(i) in self.worker_dict:
+                self.worker_dict["Worker{0}".format(i)].stop(int(i))
+
+
+            if("Thread{0}".format(i) in self.thread_dict and self.thread_dict["Thread{0}".format(i)] is not None):
+                self.thread_dict["Thread{0}".format(i)].quit()
+                self.thread_dict["Thread{0}".format(i)].wait()
+                self.thread_dict["Thread{0}".format(i)] = None
             
             print(self.identifier+ "PS" + str(i) + " MONITOR OFF")
 
