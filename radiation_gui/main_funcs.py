@@ -479,23 +479,22 @@ class MyWindowPS(object):
     def setVoltage(self, addr, j, output_num):
 
         gpib_inst = get_instrument_connection('GPIB0::{}::INSTR'.format(addr))
-
-        self.monitor_off(int(j))
-
-        gpib_inst.write('INST:SEL OUT{}'.format(output_num))
-
-
-        if(output_num == 1):
-            appl = gpib_inst.write('APPL ' + str(float(self.setpoint_voltage1_input["Voltage Input 1{0}".format(j)].text() )) + ", " + "1")
-        elif(output_num == 2):
-            appl = gpib_inst.write('APPL ' + str(float(self.setpoint_voltage2_input["Voltage Input 2{0}".format(j)].text() )) + ", " + "1")
+    
+        with QMutexLocker(GPIB_MUTEX):
+            gpib_inst.write('INST:SEL OUT{}'.format(output_num))
+            
+            if(output_num == 1):
+                appl = gpib_inst.write('APPL ' + str(float(self.setpoint_voltage1_input["Voltage Input 1{0}".format(j)].text() )) + ", " + "1")
+            elif(output_num == 2):
+                appl = gpib_inst.write('APPL ' + str(float(self.setpoint_voltage2_input["Voltage Input 2{0}".format(j)].text() )) + ", " + "1")
 
 
     def print_str(self,string):
         print(string)
 
     def gpib(self,addr,j, volt1 = None, curr1 = None, volt2 = None, curr2 = None):	#PS connected to GPIB, comm
-        self.gpib_inst = comm(addr, volt1, curr1, volt2, curr2) #with user input, should be comm(addr)
+        with QMutexLocker(GPIB_MUTEX):
+            self.gpib_inst = comm(addr, volt1, curr1, volt2, curr2) #with user input, should be comm(addr)
         print(self.identifier+"Power supply " + str(j) + " connected to GPIB")
         with open(self.PS_OUTPUT_LOG[j], "a") as f:
             dgpib = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
@@ -513,32 +512,28 @@ class MyWindowPS(object):
 
 
     def pwr_on(self,addr,j, volt1 = None, curr1= None, volt2= None, curr2= None):
-           while self.device_release == 0:
-               pass
-           self.device_release = 0
+        with QMutexLocker(GPIB_MUTEX):
            self.ON = PS_on(addr, volt1, curr1, volt2, curr2)
-           self.device_release = 1
-           print(self.identifier+'PS' + str(j) + ' Output ON')
-           with open(self.PS_OUTPUT_LOG[j], "a") as f:    					#turn on PS
-               dop = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-               f.write("%s %s" % (dop, "OUTP ON") + '\n')
-               f.close()
-           self.dict_on_button["PS{0} On button".format(j)].setEnabled(False)
-           self.dict_off_button["PS{0} Off button".format(j)].setEnabled(True)
+
+        print(self.identifier+'PS' + str(j) + ' Output ON')
+        with open(self.PS_OUTPUT_LOG[j], "a") as f:    					#turn on PS
+            dop = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            f.write("%s %s" % (dop, "OUTP ON") + '\n')
+            f.close()
+        self.dict_on_button["PS{0} On button".format(j)].setEnabled(False)
+        self.dict_off_button["PS{0} Off button".format(j)].setEnabled(True)
 
     def pwr_off(self,addr,j, volt1 = None, curr1= None, volt2= None, curr2= None):								#turn off PS 
-          while self.device_release == 0:
-              pass
-          self.device_release = 0
-          self.OFF = PS_off(addr, volt1, curr1, volt2, curr2)
-          self.device_release = 1
-          print(self.identifier+'PS' + str(j) + ' Output OFF')
-          with open(self.PS_OUTPUT_LOG[j], "a") as f:
-              doff = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-              f.write("%s %s" % (doff, "OUTP OFF") + '\n')
-              f.close()
-          self.dict_off_button["PS{0} Off button".format(j)].setEnabled(False)
-          self.dict_on_button["PS{0} On button".format(j)].setEnabled(True)
+        with QMutexLocker(GPIB_MUTEX):
+            self.OFF = PS_off(addr, volt1, curr1, volt2, curr2)
+
+        print(self.identifier+'PS' + str(j) + ' Output OFF')
+        with open(self.PS_OUTPUT_LOG[j], "a") as f:
+            doff = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            f.write("%s %s" % (doff, "OUTP OFF") + '\n')
+            f.close()
+        self.dict_off_button["PS{0} Off button".format(j)].setEnabled(False)
+        self.dict_on_button["PS{0} On button".format(j)].setEnabled(True)
 
     def monitor_on(self,i):
 
@@ -682,8 +677,9 @@ class MyWindowPS(object):
                 self.thread_dict["Thread{0}".format(i)] = None
             
             print(self.identifier+ "PS" + str(i) + " MONITOR OFF")
-
-            self.IV_off["PS{0} IV off".format(i)]= IV_meas(int(self.addr["Address{0}".format(i)]),self.voltage1["Voltage{0}".format(i)],self.current1["Current{0}".format(i)]    ,self.voltage2["Voltage{0}".format(i)],self.current2["Current{0}".format(i)])                        
+            
+            with QMutexLocker(GPIB_MUTEX):
+                self.IV_off["PS{0} IV off".format(i)]= IV_meas(int(self.addr["Address{0}".format(i)]),self.voltage1["Voltage{0}".format(i)],self.current1["Current{0}".format(i)]    ,self.voltage2["Voltage{0}".format(i)],self.current2["Current{0}".format(i)])                        
           
 
             self.dict_dash_v["PS{0} Dash".format(i)].setText("%.5f"%(self.IV_off["PS{0} IV off".format(i)][0]))
