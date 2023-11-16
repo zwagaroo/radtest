@@ -102,8 +102,8 @@ class MyWindowPS(object):
         self.processing = [False for i in range(int(self.ps_num))]
         self.csv_file = {}
         self.txt_file = {}
-        self.PS_CSM_csvname = 'CSM_' + self.date_txt + '_' + self.condition_txt + '.csv'
-        self.PS_CSM_txtname = 'CSM_' + self.date_txt + '_' + self.condition_txt + '.txt'
+        self.PS_OUTPUT_DATA = input("data csv name: ")
+        self.PS_OUTPUT_LOG = input("event log name: ")
        # for i in range (int(self.ps_num)):
        #     self.csv_file["CSV{0}".format(i)] = 'CSM_' + str(i)  + self.date_txt + '_' + self.condition_txt + '.csv'
        #     self.txt_file["TXT{0}".format(i)] = 'CSM_' + str(i)  + self.date_txt + '_' + self.condition_txt + '.txt'
@@ -488,15 +488,22 @@ class MyWindowPS(object):
         print(string)
 
     def gpib(self,addr,j, volt1 = None, curr1 = None, volt2 = None, curr2 = None):	#PS connected to GPIB, comm
-          self.gpib_inst = comm(addr, volt1, curr1, volt2, curr2) #with user input, should be comm(addr)
-          print(self.identifier+"Power supply " + str(j) + " connected to GPIB")
-          with open(self.PS_CSM_txtname, "a") as f:
-              dgpib = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-              f.write("%s %s" % (dgpib, "Power Supply Connected to GPIB") + '\n')
-              f.close()
-          print ("PS" + str(j) + " has address " + str( addr))
-          self.dict_init_button["Init button PS{0}".format(j)].setEnabled(False)
-          
+        self.gpib_inst = comm(addr, volt1, curr1, volt2, curr2) #with user input, should be comm(addr)
+        print(self.identifier+"Power supply " + str(j) + " connected to GPIB")
+        with open(self.PS_OUTPUT_LOG, "a") as f:
+            dgpib = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
+            f.write("%s %s" % (dgpib, "Power Supply Connected to GPIB") + '\n')
+            f.close()
+        with open(self.PS_OUTPUT_DATA, 'a') as csv_file:
+
+            fieldnames = ['DateTime','Time_S', 'Volt1_V PS'+str(j) , 'Curr1_A PS'+str(j), 'Volt2_V PS'+str(j), 'Curr2_A PS'+str(j)]
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames,lineterminator='\n')
+            writer.writeheader()
+
+
+        print ("PS" + str(j) + " has address " + str( addr))
+        self.dict_init_button["Init button PS{0}".format(j)].setEnabled(False)
+
 
     def pwr_on(self,addr,j, volt1 = None, curr1= None, volt2= None, curr2= None):
            while self.device_release == 0:
@@ -505,7 +512,7 @@ class MyWindowPS(object):
            self.ON = PS_on(addr, volt1, curr1, volt2, curr2)
            self.device_release = 1
            print(self.identifier+'PS' + str(j) + ' Output ON')
-           with open(self.PS_CSM_txtname, "a") as f:    					#turn on PS
+           with open(self.PS_OUTPUT_LOG, "a") as f:    					#turn on PS
                dop = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
                f.write("%s %s" % (dop, "OUTP ON") + '\n')
                f.close()
@@ -519,7 +526,7 @@ class MyWindowPS(object):
           self.OFF = PS_off(addr, volt1, curr1, volt2, curr2)
           self.device_release = 1
           print(self.identifier+'PS' + str(j) + ' Output OFF')
-          with open(self.PS_CSM_txtname, "a") as f:
+          with open(self.PS_OUTPUT_LOG, "a") as f:
               doff = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
               f.write("%s %s" % (doff, "OUTP OFF") + '\n')
               f.close()
@@ -577,7 +584,7 @@ class MyWindowPS(object):
         self.thread.finished.connect(lambda state, x=i: self.monitor_off(int (x)))
         '''
         '''
-        with open(self.PS_CSM_txtname, "a") as f:
+        with open(self.PS_OUTPUT_LOG, "a") as f:
             d = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
             f.write("%s %s" %(d, "Power Supply  ON") + '\n')
             f.close()
@@ -635,17 +642,14 @@ class MyWindowPS(object):
         self.curr2_data_line["PS{0} Current2  Data Line".format(i)].setData(self.time_dict["Time{0}".format(i)],self.curr2_data["Output 2 Curr{0}".format(i)])
 
         d2 = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-        with open(self.PS_CSM_csvname, 'a') as csv_file:
+        with open(self.PS_OUTPUT_DATA, 'a') as csv_file:
 
             fieldnames = ['DateTime','Time_S', 'Volt1_V PS'+str(i) , 'Curr1_A PS'+str(i), 'Volt2_V PS'+str(i), 'Curr2_A PS'+str(i)]
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-
-            writer.writeheader()
-
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames,lineterminator='\n')
             writer.writerow({'DateTime': d2, 'Time_S': str(i1), 'Volt1_V PS'+str(i): str(f1), 'Volt2_V PS'+str(i): str(f2), 'Curr1_A PS'+str(i): str(f3), 'Curr2_A PS'+str(i): str(f4)})
  
 
-        with open(self.PS_CSM_txtname, "a") as f:
+        with open(self.PS_OUTPUT_LOG, "a") as f:
             #d2 = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
             f.write("%s %s" %(d2, "Get IV Data") + '\n')
             f.write("%s %s %s" % (d2, "Volt1 PS" + str(i)+" (V): ", str(f1) +  '\n'))
@@ -682,7 +686,7 @@ class MyWindowPS(object):
 
             self.dict_dash_c2["PS{0} Dash".format(i)].setText("%.5f"%(self.IV_off["PS{0} IV off".format(i)][3]))    						#monitor off
             
-            with open(self.PS_CSM_txtname, "a") as f:
+            with open(self.PS_OUTPUT_LOG, "a") as f:
                 d3 = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
                 f.write("%s %s" % (d3, "Power Supply OFF") + '\n')
                 f.close()
