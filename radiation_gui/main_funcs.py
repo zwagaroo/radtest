@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import * 
 from PyQt5 import QtWidgets, QtCore 
 from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtCore import QThread, QMutex
 #plotting
 from pyqtgraph import PlotWidget, plot, mkPen
 import pyqtgraph as pg
@@ -27,6 +28,8 @@ import threading
 import traceback
 import csv
 from functools import partial
+
+GPIB_MUTEX = QMutex();
 
 class PSWorker(QObject):
     '''
@@ -66,19 +69,14 @@ class PSWorker(QObject):
         start = time.time()
         self.target_time = datetime.datetime.now()
         while self.MyWindow.processing[i]:
+
             self.target_time = self.target_time + datetime.timedelta(seconds=60)
-            while self.MyWindow.device_release==0:
-                pass
-            self.MyWindow.device_release=0
-            self.data = IV_meas(addr, volt1, curr1, volt2, curr2)
-            self.MyWindow.device_release = 1
-            end = time.time()                           #Recording and displaying V, I and time for each PS
-            self.MyWindow.time_last = end - start 
-
-
-                
-            self.GUI_PS.emit(self.data[0][0], self.data[1][0], self.data[2][0], self.data[3][0])
-            self.all_data.emit(self.data[0][0], self.data[1][0], self.data[2][0], self.data[3][0], self.MyWindow.time_last, self.target_time)
+            with QMutexLocker(GPIB_MUTEX):
+                self.data = IV_meas(addr, volt1, curr1, volt2, curr2)
+                end = time.time()                           #Recording and displaying V, I and time for each PS
+                self.MyWindow.time_last = end - start 
+                self.GUI_PS.emit(self.data[0][0], self.data[1][0], self.data[2][0], self.data[3][0])
+                self.all_data.emit(self.data[0][0], self.data[1][0], self.data[2][0], self.data[3][0], self.MyWindow.time_last, self.target_time)
             
             self.MyWindow.time_total = time_accu + self.MyWindow.time_last
 
@@ -102,8 +100,7 @@ class MyWindowPS(object):
         self.processing = [False for i in range(int(self.ps_num))]
         self.csv_file = {}
         self.txt_file = {}
-        self.PS_OUTPUT_DATA = input("data csv name: ")
-        self.PS_OUTPUT_LOG = input("event log name: ")
+
        # for i in range (int(self.ps_num)):
        #     self.csv_file["CSV{0}".format(i)] = 'CSM_' + str(i)  + self.date_txt + '_' + self.condition_txt + '.csv'
        #     self.txt_file["TXT{0}".format(i)] = 'CSM_' + str(i)  + self.date_txt + '_' + self.condition_txt + '.txt'
@@ -188,7 +185,9 @@ class MyWindowPS(object):
             self.set_voltage2_button = {}
 
 
-            
+            self.PS_OUTPUT_DATA = dict()
+            self.PS_OUTPUT_LOG = dict()
+
             #TABS
             self.tabWidget = QtWidgets.QTabWidget(MainWindow)
             self.tabWidget.setGeometry(QtCore.QRect(20,20, 1350,650))
@@ -204,13 +203,16 @@ class MyWindowPS(object):
             self.textBrowser = QtWidgets.QTextBrowser(self.logLayoutWdiget)
             self.logLayout.addWidget(self.textBrowser)
             
+
+            
             '''
             try:
                 n = int(self.ps_num)
             except ValueError:
                 print ("Only numbers are accepted. Please enter a number.")
             '''
-            
+
+
             self.volt1_dict = {}
             self.volt2_dict = {}
             self.curr1_dict = {}
@@ -225,7 +227,7 @@ class MyWindowPS(object):
                 self.volt2_data["Output 2 Volt{0}".format(i)] = []
                 self.curr2_data["Output 2 Curr{0}".format(i)] = []
 
-
+                
                 
                 self.addr["Address{0}".format(i)] = int(input("Address for PS" + str(i) + ": "))
 
@@ -235,7 +237,12 @@ class MyWindowPS(object):
 
                 self.voltage2["Voltage{0}".format(i)] = float(input("Max Voltage for PS" + str(i) + " Output 2: "))
                 self.current2["Current{0}".format(i)] = float(input("Max Current for PS" + str(i) + " Output 2: "))
+
                 
+                self.PS_OUTPUT_DATA[i] = input(f"Data CSV name for PS{i}: ")
+                self.PS_OUTPUT_LOG[i] = input(f"Output Log name for PS{i}: ")
+
+
                 self.dict_PStabs["PS{0}".format(i)] = QtWidgets.QWidget(MainWindow)
                 self.tabWidget.addTab(self.dict_PStabs["PS{0}".format(i)], "PS" + str(i))
 
@@ -490,11 +497,11 @@ class MyWindowPS(object):
     def gpib(self,addr,j, volt1 = None, curr1 = None, volt2 = None, curr2 = None):	#PS connected to GPIB, comm
         self.gpib_inst = comm(addr, volt1, curr1, volt2, curr2) #with user input, should be comm(addr)
         print(self.identifier+"Power supply " + str(j) + " connected to GPIB")
-        with open(self.PS_OUTPUT_LOG, "a") as f:
+        with open(self.PS_OUTPUT_LOG[j], "a") as f:
             dgpib = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
             f.write("%s %s" % (dgpib, "Power Supply Connected to GPIB") + '\n')
             f.close()
-        with open(self.PS_OUTPUT_DATA, 'a') as csv_file:
+        with open(self.PS_OUTPUT_DATA[j], 'a') as csv_file:
 
             fieldnames = ['DateTime','Time_S', 'Volt1_V PS'+str(j) , 'Curr1_A PS'+str(j), 'Volt2_V PS'+str(j), 'Curr2_A PS'+str(j)]
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames,lineterminator='\n')
@@ -512,7 +519,7 @@ class MyWindowPS(object):
            self.ON = PS_on(addr, volt1, curr1, volt2, curr2)
            self.device_release = 1
            print(self.identifier+'PS' + str(j) + ' Output ON')
-           with open(self.PS_OUTPUT_LOG, "a") as f:    					#turn on PS
+           with open(self.PS_OUTPUT_LOG[j], "a") as f:    					#turn on PS
                dop = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
                f.write("%s %s" % (dop, "OUTP ON") + '\n')
                f.close()
@@ -526,7 +533,7 @@ class MyWindowPS(object):
           self.OFF = PS_off(addr, volt1, curr1, volt2, curr2)
           self.device_release = 1
           print(self.identifier+'PS' + str(j) + ' Output OFF')
-          with open(self.PS_OUTPUT_LOG, "a") as f:
+          with open(self.PS_OUTPUT_LOG[j], "a") as f:
               doff = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
               f.write("%s %s" % (doff, "OUTP OFF") + '\n')
               f.close()
@@ -642,14 +649,14 @@ class MyWindowPS(object):
         self.curr2_data_line["PS{0} Current2  Data Line".format(i)].setData(self.time_dict["Time{0}".format(i)],self.curr2_data["Output 2 Curr{0}".format(i)])
 
         d2 = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
-        with open(self.PS_OUTPUT_DATA, 'a') as csv_file:
+        with open(self.PS_OUTPUT_DATA[i], 'a') as csv_file:
 
             fieldnames = ['DateTime','Time_S', 'Volt1_V PS'+str(i) , 'Curr1_A PS'+str(i), 'Volt2_V PS'+str(i), 'Curr2_A PS'+str(i)]
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames,lineterminator='\n')
             writer.writerow({'DateTime': d2, 'Time_S': str(i1), 'Volt1_V PS'+str(i): str(f1), 'Volt2_V PS'+str(i): str(f2), 'Curr1_A PS'+str(i): str(f3), 'Curr2_A PS'+str(i): str(f4)})
  
 
-        with open(self.PS_OUTPUT_LOG, "a") as f:
+        with open(self.PS_OUTPUT_LOG[i], "a") as f:
             #d2 = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
             f.write("%s %s" %(d2, "Get IV Data") + '\n')
             f.write("%s %s %s" % (d2, "Volt1 PS" + str(i)+" (V): ", str(f1) +  '\n'))
@@ -686,7 +693,7 @@ class MyWindowPS(object):
 
             self.dict_dash_c2["PS{0} Dash".format(i)].setText("%.5f"%(self.IV_off["PS{0} IV off".format(i)][3]))    						#monitor off
             
-            with open(self.PS_OUTPUT_LOG, "a") as f:
+            with open(self.PS_OUTPUT_LOG[i], "a") as f:
                 d3 = datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S")
                 f.write("%s %s" % (d3, "Power Supply OFF") + '\n')
                 f.close()
