@@ -1,7 +1,9 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QDialog, QLineEdit, QPushButton, QTabWidget, QVBoxLayout, QWidget)
 
-from test_tab import CustomTab
+from PowerSupplyTab import PowerSupplyTab
+
+from ps_funcs import *
 
 class TabDialog(QDialog):
     def __init__(self, parent=None):
@@ -39,14 +41,14 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.tabWidget)
         
         self.initUI()
+        self.resize(800, 600)
 
     def initUI(self):
-        self.setWindowTitle('Dynamic Tabs Example')
-        self.addTab('Default Tab')
+        self.setWindowTitle('ZWs Extraordinary Power Supply Monitor')
         self.show()
 
     def addTab(self, name):
-        tab = CustomTab(name)
+        tab = PowerSupplyTab(name)
         self.tabWidget.addTab(tab, name)
 
     def addNewTab(self):
