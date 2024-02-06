@@ -199,18 +199,23 @@ class PowerSupplyTab(QWidget):
         # Graphs setup
         self.graphLayout = QVBoxLayout()
         self.voltGraphLayout = QHBoxLayout()
-        self.graph1 = FigureCanvas(Figure(figsize=(5, 3)))
+        self.graph1 = FigureCanvas(Figure(figsize=(8, 4)))
         self.ax1 = self.graph1.figure.add_subplot(111)
-        self.graph2 = FigureCanvas(Figure(figsize=(5, 3)))
+        self.ax1.get_yaxis().get_major_formatter().set_useOffset(False)
+        self.graph2 = FigureCanvas(Figure(figsize=(8, 4)))
+
         self.ax2 = self.graph2.figure.add_subplot(111)
+        self.ax2.get_yaxis().get_major_formatter().set_useOffset(False)
         self.voltGraphLayout.addWidget(self.graph1)
         self.voltGraphLayout.addWidget(self.graph2)
 
         self.currGraphLayout = QHBoxLayout()
-        self.graph3 = FigureCanvas(Figure(figsize=(5, 3)))
+        self.graph3 = FigureCanvas(Figure(figsize=(8, 3.5)))
         self.ax3 = self.graph3.figure.add_subplot(111)
-        self.graph4 = FigureCanvas(Figure(figsize=(5, 3)))
+        self.ax3.get_yaxis().get_major_formatter().set_useOffset(False)
+        self.graph4 = FigureCanvas(Figure(figsize=(8, 3.5)))
         self.ax4 = self.graph4.figure.add_subplot(111)
+        self.ax4.get_yaxis().get_major_formatter().set_useOffset(False)
         self.currGraphLayout.addWidget(self.graph3)
         self.currGraphLayout.addWidget(self.graph4)
         
@@ -234,6 +239,9 @@ class PowerSupplyTab(QWidget):
         self.buttonLayout.addWidget(self.monitorOnButton)
         self.buttonLayout.addWidget(self.monitorOffButton)
         self.layout.addLayout(self.buttonLayout)
+
+        #tab closed events
+
 
     def powerOn(self):
         powerOn(self.connectedPowerSupply)
@@ -260,21 +268,25 @@ class PowerSupplyTab(QWidget):
 
     def update(self):
         self.ax1.clear()
+        self.ax1.get_yaxis().get_major_formatter().set_useOffset(False)
         self.ax1.plot(self.data["run_time"], self.data["volt1"])
         self.ax1.set_title('Voltage of Output 1 (V)')
         self.graph1.draw()
 
         self.ax2.clear()
+        self.ax2.get_yaxis().get_major_formatter().set_useOffset(False)
         self.ax2.plot(self.data["run_time"], self.data["volt2"])
         self.ax2.set_title('Voltage of Output 2 (V)')
         self.graph2.draw()
 
         self.ax3.clear()
+        self.ax3.get_yaxis().get_major_formatter().set_useOffset(False)
         self.ax3.plot(self.data["run_time"], self.data["curr1"])
         self.ax3.set_title('Current of Output 1 (A)')
         self.graph3.draw()
 
         self.ax4.clear()
+        self.ax4.get_yaxis().get_major_formatter().set_useOffset(False)
         self.ax4.plot(self.data["run_time"], self.data["curr2"])
         self.ax4.set_title('Current of Output 2 (A)')
         self.graph4.draw()
