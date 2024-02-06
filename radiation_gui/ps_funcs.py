@@ -14,6 +14,7 @@ rm = pyvisa.ResourceManager();
 
 def get_instrument_connection(address):
     # Check if the connection already exists
+
     if address in instrument_connections:
         return instrument_connections[address]
 
@@ -22,6 +23,7 @@ def get_instrument_connection(address):
 
     # Store the connection in the dictionary
     instrument_connections[address] = instrument
+    print("sucess")
 
     return instrument
 
