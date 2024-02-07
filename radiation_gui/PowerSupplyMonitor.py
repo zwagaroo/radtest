@@ -1,9 +1,11 @@
+import datetime
 import sys
 from PyQt5.QtWidgets import (QApplication, QDialog, QLineEdit, QPushButton, QTabWidget, QVBoxLayout, QWidget, QLabel, QComboBox)
 
 from PowerSupplyTab import PowerSupplyTab
 from CSMTab import CSMTab
 from ps_funcs import *
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 TabTypes = {"Power Supply" : PowerSupplyTab, "CSM" : CSMTab}
@@ -107,6 +109,20 @@ class MainWindow(QWidget):
 
         event.accept()  # Accept the close event to allow the window to close
 
+
+
+class EmittingStream():
+    textWritten = pyqtSignal(str)
+
+    def write(self, text):
+        if text == '\n':
+            text = text
+        else:
+            text = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ">>" + text
+        self.textWritten.emit(str(text))
+
+    def flush(self):
+        pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
