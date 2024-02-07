@@ -9,13 +9,13 @@ import datetime
 class eth_rx(object):
     """docstring for eth_rx"""
 
-    def __init__(self, eth, identifier):
+    def __init__(self, eth):
         self.eth = eth
         self.processing = False
         self.time_total = 0
         self.time_last = 0
         self.total_packet = 0
-        self.identifier = identifier
+        self.identifier = ""
 
     def setupUi(self, MainWindow):
         self.gridLayoutWidget = QtWidgets.QWidget(MainWindow)

@@ -65,7 +65,7 @@ class PowerSupplyDataThread(QRunnable):
         self.running = False
 
 class PowerSupplyTab(QWidget):
-    def __init__(self, name, parent=None):
+    def __init__(self, parent=None):
         super(PowerSupplyTab, self).__init__(parent)
         self.layout = QVBoxLayout(self)
         self.dataThread = None

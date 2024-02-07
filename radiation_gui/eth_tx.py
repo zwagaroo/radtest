@@ -7,10 +7,10 @@ import time
 class eth_tx(object):
     """docstring for eth_tx"""
 
-    def __init__(self,eth,identifier):
+    def __init__(self,eth):
         self.eth = eth
         self.jtaglooping = 0
-        self.identifier = identifier
+        self.identifier = ""
         # print(self.eth.rst_chk_tms_s)
 
     def setupUi(self, MainWindow):

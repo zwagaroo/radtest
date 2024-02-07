@@ -1,23 +1,38 @@
 import sys
-from PyQt5.QtWidgets import (QApplication, QDialog, QLineEdit, QPushButton, QTabWidget, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QApplication, QDialog, QLineEdit, QPushButton, QTabWidget, QVBoxLayout, QWidget, QLabel, QComboBox)
 
 from PowerSupplyTab import PowerSupplyTab
-
+from CSMTab import CSMTab
 from ps_funcs import *
+
+
+TabTypes = {"Power Supply" : PowerSupplyTab, "CSM" : CSMTab}
 
 class TabDialog(QDialog):
     def __init__(self, parent=None):
         super(TabDialog, self).__init__(parent)
         self.setWindowTitle('New Tab Name')
         self.layout = QVBoxLayout(self)
+        self.tabLabel = QLabel("Tab Name")
         self.lineEdit = QLineEdit(self)
+        self.typeLabel = QLabel("Tab Type")
+        self.comboBox = QComboBox()
+
+        for option in TabTypes.keys():
+            self.comboBox.addItem(option)
+
         self.button = QPushButton('OK', self)
         self.button.clicked.connect(self.accept)
+        self.layout.addWidget(self.tabLabel)
         self.layout.addWidget(self.lineEdit)
+        self.layout.addWidget(self.comboBox)
         self.layout.addWidget(self.button)
 
     def getNewTabName(self):
         return self.lineEdit.text()
+    
+    def getNewTabType(self):
+        return self.comboBox.currentText()
 
 
 class MainWindow(QWidget):
@@ -66,16 +81,17 @@ class MainWindow(QWidget):
         self.setWindowTitle('ZWs Extraordinary Power Supply Monitor')
         self.show()
 
-    def addTab(self, name):
-        tab = PowerSupplyTab(name)
+    def addTab(self, name, type):
+        tab = TabTypes[type]()
         self.tabWidget.addTab(tab, name)
 
     def addNewTab(self):
         dialog = TabDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             newTabName = dialog.getNewTabName()
+            newTabType = dialog.getNewTabType()
             if newTabName:
-                self.addTab(newTabName)
+                self.addTab(newTabName, newTabType)
 
 
 

@@ -89,13 +89,13 @@ def zero_str_gen(num):  # Generate num of zeros string
 
 
 class ETH_control():
-    def __init__(self,eth_name):
+    def __init__(self):
         self.tdo_finding_inprogress = 0
         self.multiboot_inprogress = 0
         self.data_length = int(352 / 4)  # in 4 bits
         self.error_list=[]
         self.mboot_count = -1
-        self.eth_name = eth_name
+        self.eth_name = None
         for i in range(47):
             self.error_list.append('0')
 
@@ -194,10 +194,11 @@ class ETH_control():
 #######################################################################
 
 
-
     def send_eth_packet(self, command, payload):  # payload only needs to be a string
         # print( 'Command: '+ command)
         # print( 'Payload: ' + payload)
+        if(self.eth_name == None):
+            raise Exception("Ethernet address not set")
         sendeth(self.PC_src, self.PC_dst, self.PC_eth_type, command, payload, self.eth_name)
         time.sleep(0.001)
 
