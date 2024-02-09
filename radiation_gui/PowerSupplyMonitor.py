@@ -7,6 +7,8 @@ from CSMTab import CSMTab
 from ps_funcs import *
 from PyQt5.QtCore import QThread, pyqtSignal
 
+from PyQt5.QtGui import QIcon
+
 
 TabTypes = {"Power Supply" : PowerSupplyTab, "CSM" : CSMTab}
 
@@ -41,7 +43,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout(self)
-        
+        self.setWindowIcon(QIcon('icon.png'))
         # Create the Add New Tab button and set its text
         self.addTabButton = QPushButton('Add New Tab')
         self.addTabButton.clicked.connect(self.addNewTab)
@@ -127,4 +129,5 @@ class EmittingStream():
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     mainWindow = MainWindow()
+
     sys.exit(app.exec_())
