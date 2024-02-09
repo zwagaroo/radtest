@@ -5,17 +5,27 @@ from StyleSheet import *
 import time
 import datetime
 
-
 class eth_rx(object):
     """docstring for eth_rx"""
 
-    def __init__(self, eth):
+    def __init__(self, eth, CSM_tab):
         self.eth = eth
         self.processing = False
         self.time_total = 0
         self.time_last = 0
         self.total_packet = 0
         self.identifier = ""
+        self.CSM_tab = CSM_tab
+
+    def Log(self, msg):
+        with open(self.CSM_tab.logPath, 'a') as logfile:
+            logfile.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ">>" + msg)
+
+    def printAndLog(self, msg):
+        print(msg)
+        self.Log(msg)
+
+
 
     def setupUi(self, MainWindow):
         self.gridLayoutWidget = QtWidgets.QWidget(MainWindow)

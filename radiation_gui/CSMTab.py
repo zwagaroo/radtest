@@ -11,9 +11,9 @@ class CSMTab(QWidget):
         self.layout = QVBoxLayout(self)
         self.eth = ETH_control()
 
-        self.eth_rx_inst = eth_rx(self.eth)
+        self.eth_rx_inst = eth_rx(self.eth, self)
 
-
+        self.eth_rx_inst.pushButton_startEth.setEnabled(False)
         self.eth_tx_inst = eth_tx(self.eth)
 
 
@@ -31,16 +31,27 @@ class CSMTab(QWidget):
         self.ethAddressLineEdit = QLineEdit()
         self.configurationLayout.addWidget(self.ethAddressLineEdit)
 
+        self.logPathLabel = QLabel("Log Path")
+        self.configurationLayout.addWidget(self.logPathLabel)
+
+        self.logPathLineEdit = QLineEdit()
+        self.configurationLayout.addWidget(self.logPathLineEdit)
+
         self.setConfigurationButton = QPushButton("Set")
 
         self.configurationLayout.addWidget(self.setConfigurationButton)
 
 
+        self.logPath = None
+
         def setConfigurations():
             self.eth.eth_name = self.ethAddressLineEdit.text()
             self.eth_tx_inst.identifier = self.identifierLineEdit.text()
             self.eth_rx_inst.identifier = self.identifierLineEdit.text()
-            pass
+
+            self.logPath = self.logPathLineEdit.text()
+
+            self.eth_rx_inst.pushButton_startEth.setEnabled(True)
 
 
         self.setConfigurationButton.clicked.connect(setConfigurations)
