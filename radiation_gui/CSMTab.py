@@ -13,7 +13,6 @@ class CSMTab(QWidget):
 
         self.eth_rx_inst = eth_rx(self.eth, self)
 
-        self.eth_rx_inst.pushButton_startEth.setEnabled(False)
         self.eth_tx_inst = eth_tx(self.eth)
 
 
@@ -69,6 +68,9 @@ class CSMTab(QWidget):
         self.eth_rx_inst.setupUi(self.tab_eth_rx)
 
         self.eth_tx_inst.setupUi(self.tab_eth_tx)
+
+        
+        self.eth_rx_inst.pushButton_startEth.setEnabled(False)
 
         self.layout.addWidget(self.tabWidget)
 
