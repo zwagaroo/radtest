@@ -19,7 +19,7 @@ class eth_rx(object):
 
     def Log(self, msg):
         with open(self.CSM_tab.logPath, 'a') as logfile:
-            logfile.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ">>" + msg)
+            logfile.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + ">>" + msg + '\n')
 
     def printAndLog(self, msg):
         print(msg)
