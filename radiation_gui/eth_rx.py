@@ -214,19 +214,19 @@ class eth_rx(object):
 
     def vio_update(self):
         self.total_packet += 1
-        # print('singal connect success!')
+        # self.printAndLog('singal connect success!')
         if 0<self.total_packet<10 or self.total_packet%100==0:
-            print(self.identifier+"Received "+str(self.total_packet) +" packets!")
+            self.printAndLog(self.identifier+"Received "+str(self.total_packet) +" packets!")
         if 9<self.total_packet<100 and self.total_packet%10==0:
-            print(self.identifier+"Received "+str(self.total_packet) +" packets!")
+            self.printAndLog(self.identifier+"Received "+str(self.total_packet) +" packets!")
 
         self.label_vio_list[0]. setStyleSheet(LedGreen if self.eth.error_list[0]=='1' else LedGray)
 
-        # print('fatal error label text = '+self.label_vio_list[1].text())
-        # print('fatal error reg = '+self.eth.error_list[1])
+        # self.printAndLog('fatal error label text = '+self.label_vio_list[1].text())
+        # self.printAndLog('fatal error reg = '+self.eth.error_list[1])
         if self.label_vio_list[1].text()=='0' and self.eth.error_list[1]=='1': 
             if self.eth.multiboot_inprogress==0:
-                print(self.identifier+"---FATAL ERROR!!---")
+                self.printAndLog(self.identifier+"---FATAL ERROR!!---")
                 # self.eth.multiboot_inprogress=1
                 # self.multi_boot()
                 # time.sleep(5)
@@ -241,37 +241,37 @@ class eth_rx(object):
             if self.eth.error_list[i]!=self.label_vio_list[i].text():                                     
                 if i==2:
                     self.label_vio_list[2]. setText(self.eth.error_list[2])
-                    print(self.identifier+'design number changed to '+self.eth.error_list[2])
+                    self.printAndLog(self.identifier+'design number changed to '+self.eth.error_list[2])
                     if self.eth.error_list[2]!='7':
                         self.eth.mboot_count += 1
                         self.label_mboot_count.setText(str(self.eth.mboot_count))
-                        print(self.identifier+"Multiboot count=%d" %(self.eth.mboot_count))
+                        self.printAndLog(self.identifier+"Multiboot count=%d" %(self.eth.mboot_count))
                 if i==3:
                     self.label_vio_list[i].setText(self.eth.error_list[i])
-                    print(self.identifier+'vio locked' if self.eth.error_list[3]=='1' else self.identifier+'vio unlocked')
+                    self.printAndLog(self.identifier+'vio locked' if self.eth.error_list[3]=='1' else self.identifier+'vio unlocked')
                 if 3<i<10:                    
                     self.label_vio_list[i].setText(self.eth.error_list[i])
                     if self.eth.check_ttc[0][i-4]=='1':
-                        print(self.identifier+'TTCin_err_reg_'+str(9-i)+'='+self.eth.error_list[i])
+                        self.printAndLog(self.identifier+'TTCin_err_reg_'+str(9-i)+'='+self.eth.error_list[i])
                 if 9<i<28:    
                     self.label_vio_list[i].setText(self.eth.error_list[i])
                     if self.eth.check_tck[0][i-10]=='1':                        
-                        print(self.identifier+'TCK_err_reg_'+str(27-i)+'='+self.eth.error_list[i])
+                        self.printAndLog(self.identifier+'TCK_err_reg_'+str(27-i)+'='+self.eth.error_list[i])
                 if 27<i<46:
                     self.label_vio_list[i].setText(self.eth.error_list[i])
                     if self.eth.check_tms[0][i-28]=='1':                    
-                        print(self.identifier+'TMS_err_reg_'+str(45-i)+'='+self.eth.error_list[i])
+                        self.printAndLog(self.identifier+'TMS_err_reg_'+str(45-i)+'='+self.eth.error_list[i])
                 if i==46:
                     self.label_vio_list[i].setText(self.eth.error_list[i])
                     if self.eth.check_tdo[0]=='1':                    
-                        print(self.identifier+'TDO_err_reg='+self.eth.error_list[i])
+                        self.printAndLog(self.identifier+'TDO_err_reg='+self.eth.error_list[i])
 
 
     def update_checklist(self):
         checklist_str = ''
         for i in range(43):
             checklist_str += '1' if self.err_checkbox_list[i].isChecked() else '0'
-        print(self.identifier+'error_check_list now ='+checklist_str)
+        self.printAndLog(self.identifier+'error_check_list now ='+checklist_str)
         self.eth.check_ttc[0] = checklist_str[0:6]
         self.eth.check_tck[0] = checklist_str[6:24]
         self.eth.check_tms[0] = checklist_str[24:42]
@@ -285,9 +285,9 @@ class eth_rx(object):
         self.eth.check_tdo[0]           = '0'
         self.eth.update_VIO_CONTROL()
         for i in range (10):
-            print(self.identifier+"multi_boot in %d second(s)!"%(10-i))
+            self.printAndLog(self.identifier+"multi_boot in %d second(s)!"%(10-i))
             time.sleep(1)
-        print(self.identifier+"multi_boot in progress!")
+        self.printAndLog(self.identifier+"multi_boot in progress!")
         self.eth.mbt_trigger_minisas[0] = '1'
         self.eth.update_VIO_CONTROL()
         time.sleep(2)
@@ -298,7 +298,7 @@ class eth_rx(object):
         self.eth.errcnt_rst4ch[0]       = '00000000000'
         self.update_checklist()
         self.eth.update_VIO_CONTROL()
-        print(self.identifier+"multi_boot finished!")
+        self.printAndLog(self.identifier+"multi_boot finished!")
 
 
     def start_monitor(self):    
@@ -397,7 +397,7 @@ class Worker_eth_read(QObject):
         self.eth_rx.processing = True        
         time_accu =  self.eth_rx.time_total
         # crc_cal_tmp = crc_cal(self.eth_rx.TDC_inst)  
-        print(self.identifier+"Monitoring error counters!")
+        self.printAndLog(self.identifier+"Monitoring error counters!")
         start = time.time()
         while self.eth_rx.processing:
             packet_full = ethread(self.eth_rx.eth.eth_name)
@@ -407,8 +407,8 @@ class Worker_eth_read(QObject):
             end = time.time()
             self.eth_rx.time_last = end-start
             self.eth_rx.time_total = time_accu + self.eth_rx.time_last
-        print(self.identifier+"Monitoring stopped.")
-        print(self.identifier+"Monitoring time: " +str(end-start))
+        self.printAndLog(self.identifier+"Monitoring stopped.")
+        self.printAndLog(self.identifier+"Monitoring time: " +str(end-start))
         self.finished.emit()
 
 
@@ -431,18 +431,18 @@ class Worker_find_tdo(QObject):
             if self.eth_rx.eth.check_tdo[0] == '1':
                 self.tdo_error_pre = self.tdo_error
                 self.tdo_error = int(self.eth_rx.eth.error_list[46])
-                # print('tdo_error='+str(self.tdo_error))
-                # print('tdo_error_pre='+str(self.tdo_error_pre))
+                # self.printAndLog('tdo_error='+str(self.tdo_error))
+                # self.printAndLog('tdo_error_pre='+str(self.tdo_error_pre))
                 time.sleep(1)  #  first packet
                 self.tdo_error_pre = self.tdo_error
                 self.tdo_error = int(self.eth_rx.eth.error_list[46])
-                # print('tdo_error='+str(self.tdo_error))
-                # print('tdo_error_pre='+str(self.tdo_error_pre))
+                # self.printAndLog('tdo_error='+str(self.tdo_error))
+                # self.printAndLog('tdo_error_pre='+str(self.tdo_error_pre))
                 if self.tdo_error-self.tdo_error_pre>10000:
                     self.eth_rx.eth.tdo_finding_inprogress = 1
-                    print(self.identifier+'tdo_error='+str(self.tdo_error))
-                    print(self.identifier+'tdo_error_pre='+str(self.tdo_error_pre))
-                    print(self.identifier+"TDO link failed! Now start to check. TTC, TCK and TMS check disabled.")
+                    self.printAndLog(self.identifier+'tdo_error='+str(self.tdo_error))
+                    self.printAndLog(self.identifier+'tdo_error_pre='+str(self.tdo_error_pre))
+                    self.printAndLog(self.identifier+"TDO link failed! Now start to check. TTC, TCK and TMS check disabled.")
                     self.eth_rx.eth.check_tms[0]           = '000000000000000000'
                     self.eth_rx.eth.check_tck[0]           = '000000000000000000'
                     self.eth_rx.eth.check_ttc[0]           = '000000'
@@ -453,7 +453,7 @@ class Worker_find_tdo(QObject):
                             jtag_daisy_chain = ''                    
                             for j in range (18):
                                 jtag_daisy_chain += '1' if i==j else '0'
-                            print(self.identifier+"jtag_daisy_chain="+jtag_daisy_chain)
+                            self.printAndLog(self.identifier+"jtag_daisy_chain="+jtag_daisy_chain)
                             self.eth_rx.eth.jtag_daisychain[0]=jtag_daisy_chain
                             self.eth_rx.eth.update_VIO_CONTROL()
                             time.sleep(1)
@@ -464,7 +464,7 @@ class Worker_find_tdo(QObject):
                             self.tdo_error = int(self.eth_rx.eth.error_list[46])
                             jtag_working_chain += '1' if self.tdo_error==self.tdo_error_pre else '0'
                     jtag_daisy_chain = '000000000000000000'
-                    print(self.identifier+"jtag_working_chain="+jtag_working_chain)
+                    self.printAndLog(self.identifier+"jtag_working_chain="+jtag_working_chain)
                     self.eth_rx.eth.jtag_daisychain[0]=jtag_daisy_chain
                     self.eth_rx.eth.update_VIO_CONTROL()
                     self.eth_rx.eth.multiboot_inprogress = 1
@@ -508,7 +508,7 @@ class Worker_error_monitor(QObject):
             if data_error==1 and self.eth_rx.eth.multiboot_inprogress ==0\
                 and self.eth_rx.eth.tdo_finding_inprogress == 0:
                 self.prepare_to_multiboot += 1
-                print(self.identifier + "Massive errors found for %d time(s)!" %(self.prepare_to_multiboot))
+                self.printAndLog(self.identifier + "Massive errors found for %d time(s)!" %(self.prepare_to_multiboot))
             else:
                 self.prepare_to_multiboot  = 0
 
