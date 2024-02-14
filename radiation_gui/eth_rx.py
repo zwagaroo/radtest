@@ -396,7 +396,7 @@ class Worker_eth_read(QObject):
         self.eth_rx.processing = True        
         time_accu =  self.eth_rx.time_total
         # crc_cal_tmp = crc_cal(self.eth_rx.TDC_inst)  
-        self.printAndLog(self.identifier+"Monitoring error counters!")
+        self.eth_rx.printAndLog(self.identifier+"Monitoring error counters!")
         start = time.time()
         while self.eth_rx.processing:
             packet_full = ethread(self.eth_rx.eth.eth_name)
@@ -406,8 +406,8 @@ class Worker_eth_read(QObject):
             end = time.time()
             self.eth_rx.time_last = end-start
             self.eth_rx.time_total = time_accu + self.eth_rx.time_last
-        self.printAndLog(self.identifier+"Monitoring stopped.")
-        self.printAndLog(self.identifier+"Monitoring time: " +str(end-start))
+        self.eth_rx.printAndLog(self.identifier+"Monitoring stopped.")
+        self.eth_rx.printAndLog(self.identifier+"Monitoring time: " +str(end-start))
         self.finished.emit()
 
 
@@ -439,9 +439,9 @@ class Worker_find_tdo(QObject):
                 # self.printAndLog('tdo_error_pre='+str(self.tdo_error_pre))
                 if self.tdo_error-self.tdo_error_pre>10000:
                     self.eth_rx.eth.tdo_finding_inprogress = 1
-                    self.printAndLog(self.identifier+'tdo_error='+str(self.tdo_error))
-                    self.printAndLog(self.identifier+'tdo_error_pre='+str(self.tdo_error_pre))
-                    self.printAndLog(self.identifier+"TDO link failed! Now start to check. TTC, TCK and TMS check disabled.")
+                    self.eth_rx.printAndLog(self.identifier+'tdo_error='+str(self.tdo_error))
+                    self.eth_rx.printAndLog(self.identifier+'tdo_error_pre='+str(self.tdo_error_pre))
+                    self.eth_rx.printAndLog(self.identifier+"TDO link failed! Now start to check. TTC, TCK and TMS check disabled.")
                     self.eth_rx.eth.check_tms[0]           = '000000000000000000'
                     self.eth_rx.eth.check_tck[0]           = '000000000000000000'
                     self.eth_rx.eth.check_ttc[0]           = '000000'
@@ -452,7 +452,7 @@ class Worker_find_tdo(QObject):
                             jtag_daisy_chain = ''                    
                             for j in range (18):
                                 jtag_daisy_chain += '1' if i==j else '0'
-                            self.printAndLog(self.identifier+"jtag_daisy_chain="+jtag_daisy_chain)
+                            self.eth_rx.printAndLog(self.identifier+"jtag_daisy_chain="+jtag_daisy_chain)
                             self.eth_rx.eth.jtag_daisychain[0]=jtag_daisy_chain
                             self.eth_rx.eth.update_VIO_CONTROL()
                             time.sleep(1)
@@ -463,7 +463,7 @@ class Worker_find_tdo(QObject):
                             self.tdo_error = int(self.eth_rx.eth.error_list[46])
                             jtag_working_chain += '1' if self.tdo_error==self.tdo_error_pre else '0'
                     jtag_daisy_chain = '000000000000000000'
-                    self.printAndLog(self.identifier+"jtag_working_chain="+jtag_working_chain)
+                    self.eth_rx.printAndLog(self.identifier+"jtag_working_chain="+jtag_working_chain)
                     self.eth_rx.eth.jtag_daisychain[0]=jtag_daisy_chain
                     self.eth_rx.eth.update_VIO_CONTROL()
                     self.eth_rx.eth.multiboot_inprogress = 1
@@ -507,7 +507,7 @@ class Worker_error_monitor(QObject):
             if data_error==1 and self.eth_rx.eth.multiboot_inprogress ==0\
                 and self.eth_rx.eth.tdo_finding_inprogress == 0:
                 self.prepare_to_multiboot += 1
-                self.printAndLog(self.identifier + "Massive errors found for %d time(s)!" %(self.prepare_to_multiboot))
+                self.eth_rx.printAndLog(self.identifier + "Massive errors found for %d time(s)!" %(self.prepare_to_multiboot))
             else:
                 self.prepare_to_multiboot  = 0
 
