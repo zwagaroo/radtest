@@ -538,7 +538,6 @@ class MyWindowPS(object):
     def monitor_on(self,i):
 
         self.time_dict["Time{0}".format(i)] = []
-        
         self.volt1_data["Output 1 Volt{0}".format(i)] = []
         self.curr1_data["Output 1 Curr{0}".format(i)] = []
         self.volt2_data["Output 2 Volt{0}".format(i)] = []
@@ -549,9 +548,7 @@ class MyWindowPS(object):
         
         self.worker_dict["Worker{0}".format(i)].moveToThread(self.thread_dict["Thread{0}".format(i)])
         
-
         self.thread_dict["Thread{0}".format(i)].started.connect(partial(self.worker_dict["Worker{0}".format(i)].run, int(self.addr["Address{0}".format(i)]),self.voltage1["Voltage{0}".format(i)],self.current1["Current{0}".format(i)]    ,self.voltage2["Voltage{0}".format(i)],self.current2["Current{0}".format(i)], int(i) ))
-
         
         self.worker_dict["Worker{0}".format(i)].finished.connect(self.thread_dict["Thread{0}".format(i)].quit)
         self.worker_dict["Worker{0}".format(i)].finished.connect(self.worker_dict["Worker{0}".format(i)].deleteLater)            
@@ -669,7 +666,6 @@ class MyWindowPS(object):
             
             if "Worker{0}".format(i) in self.worker_dict:
                 self.worker_dict["Worker{0}".format(i)].stop(int(i))
-
 
             if("Thread{0}".format(i) in self.thread_dict and self.thread_dict["Thread{0}".format(i)] is not None):
                 self.thread_dict["Thread{0}".format(i)].quit()

@@ -302,7 +302,6 @@ class eth_rx(object):
 
 
     def start_monitor(self):    
-
         # Step 2: Create a QThread object
         self.thread = QThread()
         # Step 3: Create a worker object
